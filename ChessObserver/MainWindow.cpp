@@ -12,28 +12,34 @@ QLabel* imageLabel;
 
 MainWindow::MainWindow(QWidget* parent){
 
+    //Size of the window
     this->setFixedSize(500, 500);
+    this->setWindowTitle(tr("Chess Observer"));
 
-    //Main button
+    //Main layout
     QVBoxLayout* mainLayout = new QVBoxLayout();
-    //mainLayout->addWidget(label);
-
     mainLayout->setSizeConstraint(QLayout::SetFixedSize);
-    mainLayout->setAlignment(Qt::AlignCenter);
+    //mainLayout->setAlignment(Qt::AlignCenter);
     this->setLayout(mainLayout);
 
-    QPushButton* button = new QPushButton("Costi Button", this);
-    button->setGeometry(150, 0, 200, 50);
-    button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
-    mainLayout->addWidget(button);
+    //Button 1
+    QPushButton* button1 = new QPushButton("Take webcam screenshot", this);
+    button1->setGeometry(100, 0, 200, 50);
+    //button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+    mainLayout->addWidget(button1);
+
+    //Button 2
+    QPushButton* button2 = new QPushButton("Open file", this);
+    button2->setGeometry(300, 0, 200, 50);
+    //button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+    mainLayout->addWidget(button2);
+
  
-    // Set up the model and configure the view...
-    this->setWindowTitle(tr("Where are you costi butoon."));
-    
     //Here we do a connec
-    QObject::connect(button, &QPushButton::clicked, this, &MainWindow::onButtonEvent);
+    QObject::connect(button1, &QPushButton::clicked, this, &MainWindow::takeScreenshot);
+    QObject::connect(button2, &QPushButton::clicked, this, &MainWindow::readFileFromDisk);
 
-
+    //Open up the webcam
     VideoCapture cap(0);
     if (!cap.isOpened()) {
         std::cout << "BAD";
@@ -58,7 +64,7 @@ MainWindow::~MainWindow(){
 
 }
 
-void MainWindow::onButtonEvent(){
+void MainWindow::takeScreenshot(){
    
     Mat img;
     cap >> img;
@@ -69,9 +75,22 @@ void MainWindow::onButtonEvent(){
 
     QPixmap image = QPixmap::fromImage(QImage(img2.data, img2.cols, img2.rows, img2.step, QImage::Format_RGB888));
 
-
     imageLabel->setPixmap(image);
-
-
 }
 
+void MainWindow::readFileFromDisk() {
+
+    QString fileName;
+    fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), "/home/jana", tr("Image Files (*.png *.jpg *.bmp)"));
+
+    if (!fileName.isEmpty()) {
+        Mat img;
+        String test = fileName.toStdString();
+        img = imread(test);
+        Mat img2 = process(img);
+        cvtColor(img2, img2, COLOR_BGR2RGB);
+        QPixmap image = QPixmap::fromImage(QImage(img2.data, img2.cols, img2.rows, img2.step, QImage::Format_RGB888));
+
+        imageLabel->setPixmap(image);
+    }
+}

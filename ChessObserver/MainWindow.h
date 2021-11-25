@@ -11,6 +11,6 @@ public:
 	~MainWindow();
 
 
-	void onButtonEvent();
-
+	void takeScreenshot();
+	void readFileFromDisk();
 };
