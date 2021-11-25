@@ -1,9 +1,16 @@
 #pragma once
 
-#include <QtWidgets/QMainWindow>
+#include <QtWidgets>
 
-class MainWindow{
-	public:
-	MainWindow(int argc, char* argv[]);
+class MainWindow : public QMainWindow {
+	Q_OBJECT
+public:
+
+	MainWindow(QWidget* parent = Q_NULLPTR);
+
+	~MainWindow();
+
+
+	void onButtonEvent();
 
 };

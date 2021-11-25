@@ -1,60 +1,77 @@
+
+#include <iostream>
+#include <opencv2\opencv.hpp>
 #include "MainWindow.h"
-#include <QtWidgets>
 
-MainWindow::MainWindow(int argc, char* argv[]) {
+#include "ImageProcessing.h"
 
-	QApplication app(argc, argv);
+using namespace cv;
 
-    QWidget window;
+VideoCapture cap(0);
+QLabel* imageLabel;
 
-    //Obiectele din fereastra
-    QLabel* queryLabel = new QLabel(QApplication::translate("nestedlayouts", "Query:"));
-    QLineEdit* queryEdit = new QLineEdit();
-    QTableView* resultView = new QTableView();  
+MainWindow::MainWindow(QWidget* parent){
 
-    //Layouts
-    QHBoxLayout* queryLayout = new QHBoxLayout();  
-    queryLayout->addWidget(queryLabel);
-    queryLayout->addWidget(queryEdit);
+    this->setFixedSize(500, 500);
 
+    //Main button
     QVBoxLayout* mainLayout = new QVBoxLayout();
-    mainLayout->addLayout(queryLayout);
-    mainLayout->addWidget(resultView);
-    window.setLayout(mainLayout);
+    //mainLayout->addWidget(label);
 
-    QStandardItemModel model;
-    model.setHorizontalHeaderLabels({ QApplication::translate("nestedlayouts", "Name"),
-                                      QApplication::translate("nestedlayouts", "Office") });
+    mainLayout->setSizeConstraint(QLayout::SetFixedSize);
+    mainLayout->setAlignment(Qt::AlignCenter);
+    this->setLayout(mainLayout);
 
-    const QStringList rows[] = {
-        QStringList{ QStringLiteral("Verne Nilsen"), QStringLiteral("123") },
-        QStringList{ QStringLiteral("Carlos Tang"), QStringLiteral("77") },
-        QStringList{ QStringLiteral("Bronwyn Hawcroft"), QStringLiteral("119") },
-        QStringList{ QStringLiteral("Alessandro Hanssen"), QStringLiteral("32") },
-        QStringList{ QStringLiteral("Andrew John Bakken"), QStringLiteral("54") },
-        QStringList{ QStringLiteral("Vanessa Weatherley"), QStringLiteral("85") },
-        QStringList{ QStringLiteral("Rebecca Dickens"), QStringLiteral("17") },
-        QStringList{ QStringLiteral("David Bradley"), QStringLiteral("42") },
-        QStringList{ QStringLiteral("Knut Walters"), QStringLiteral("25") },
-        QStringList{ QStringLiteral("Andrea Jones"), QStringLiteral("34") }
-    };
+    QPushButton* button = new QPushButton("Costi Button", this);
+    button->setGeometry(150, 0, 200, 50);
+    button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
+    mainLayout->addWidget(button);
+ 
+    // Set up the model and configure the view...
+    this->setWindowTitle(tr("Where are you costi butoon."));
+    
+    //Here we do a connec
+    QObject::connect(button, &QPushButton::clicked, this, &MainWindow::onButtonEvent);
 
-    QList<QStandardItem*> items;
-    for (const QStringList& row : rows) {
-        items.clear();
-        for (const QString& text : row)
-            items.append(new QStandardItem(text));
-        model.appendRow(items);
+
+    VideoCapture cap(0);
+    if (!cap.isOpened()) {
+        std::cout << "BAD";
     }
 
-    resultView->setModel(&model);
-    resultView->verticalHeader()->hide();
-    resultView->horizontalHeader()->setStretchLastSection(true);
+    imageLabel = new QLabel(this);
+    imageLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
+    imageLabel->setMinimumSize(200, 200);
+    imageLabel->setMaximumSize(500, 500);
 
-    // Set up the model and configure the view...
-    window.setWindowTitle(
-        QApplication::translate("nestedlayouts", "Nested layouts"));
-    window.show();
-    app.exec();
+    imageLabel->setGeometry(0, 50, 500, 500);
+
+    mainLayout->addWidget(imageLabel);
+
+    //onButtonEvent();
+    this->show();
 }
+
+MainWindow::~MainWindow(){
+
+
+}
+
+void MainWindow::onButtonEvent(){
+   
+    Mat img;
+    cap >> img;
+
+    Mat img2 = process(img);
+
+    cvtColor(img2, img2, COLOR_BGR2RGB);
+
+    QPixmap image = QPixmap::fromImage(QImage(img2.data, img2.cols, img2.rows, img2.step, QImage::Format_RGB888));
+
+
+    imageLabel->setPixmap(image);
+
+
+}
+

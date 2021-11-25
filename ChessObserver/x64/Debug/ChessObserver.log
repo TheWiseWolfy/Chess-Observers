@@ -1,6 +1,2 @@
-﻿  rcc MainWindow.qrc
-   RCC: Warning: No resources in 'F:\Projects\Git\Chess_observers\Chess-Observers\ChessObserver\MainWindow.qrc'.
-  MainWindow.cpp
-  main.cpp
-  qrc_MainWindow.cpp
-  ChessObserver.vcxproj -> F:\Projects\Git\Chess_observers\Chess-Observers\x64\Debug\ChessObserver.exe
+﻿  MainWindow.cpp
+  ChessObserver.vcxproj -> F:\Projects\Git\Chess_observers\Git repository\Chess-Observers\x64\Debug\ChessObserver.exe
