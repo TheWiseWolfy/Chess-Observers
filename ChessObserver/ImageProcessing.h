@@ -6,3 +6,4 @@
 #include<opencv2/highgui.hpp>
 
 cv::Mat  process(cv::Mat img);
+cv::Mat  process2(cv::Mat img);

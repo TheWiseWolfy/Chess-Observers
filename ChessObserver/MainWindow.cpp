@@ -13,7 +13,7 @@ QLabel* imageLabel;
 MainWindow::MainWindow(QWidget* parent){
 
     //Size of the window
-    this->setFixedSize(500, 500);
+    this->setFixedSize(1000, 1000);
     this->setWindowTitle(tr("Chess Observer"));
 
     //Main layout
@@ -49,9 +49,9 @@ MainWindow::MainWindow(QWidget* parent){
     imageLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
     imageLabel->setMinimumSize(200, 200);
-    imageLabel->setMaximumSize(500, 500);
+    imageLabel->setMaximumSize(1000, 1000);
 
-    imageLabel->setGeometry(0, 50, 500, 500);
+    imageLabel->setGeometry(0, 50, 1000, 1000);
 
     mainLayout->addWidget(imageLabel);
 
@@ -69,11 +69,11 @@ void MainWindow::takeScreenshot(){
     Mat img;
     cap >> img;
 
-    Mat img2 = process(img);
+    Mat img2 = process2(img);
 
-    cvtColor(img2, img2, COLOR_BGR2RGB);
+    //cvtColor(img2, img2, COLOR_BGR2RGB);
 
-    QPixmap image = QPixmap::fromImage(QImage(img2.data, img2.cols, img2.rows, img2.step, QImage::Format_RGB888));
+    QPixmap image = QPixmap::fromImage(QImage(img2.data, img2.cols, img2.rows, img2.step, QImage::Format_Grayscale8));
 
     imageLabel->setPixmap(image);
 }
@@ -87,9 +87,9 @@ void MainWindow::readFileFromDisk() {
         Mat img;
         String test = fileName.toStdString();
         img = imread(test);
-        Mat img2 = process(img);
-        cvtColor(img2, img2, COLOR_BGR2RGB);
-        QPixmap image = QPixmap::fromImage(QImage(img2.data, img2.cols, img2.rows, img2.step, QImage::Format_RGB888));
+        Mat img2 = process2(img);
+        //cvtColor(img2, img2, COLOR_BGR2RGB);
+        QPixmap image = QPixmap::fromImage(QImage(img2.data, img2.cols, img2.rows, img2.step, QImage::Format_Grayscale8));
 
         imageLabel->setPixmap(image);
     }
