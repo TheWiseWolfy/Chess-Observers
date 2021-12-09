@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <opencv2\opencv.hpp>
 #include "MainWindow.h"
@@ -69,6 +68,9 @@ void MainWindow::takeScreenshot(){
     Mat img;
     cap >> img;
 
+
+
+
     Mat img2 = process2(img);
 
     //cvtColor(img2, img2, COLOR_BGR2RGB);
@@ -87,9 +89,15 @@ void MainWindow::readFileFromDisk() {
         Mat img;
         String test = fileName.toStdString();
         img = imread(test);
-        Mat img2 = process2(img);
+
+        cv::resize(img, img, Size(600* (img.cols / img.rows) , 600 ) , INTER_LINEAR);
+
+        Mat img2 = transformImage(img);
+
+        Mat img3 = process2(img2);
+
         //cvtColor(img2, img2, COLOR_BGR2RGB);
-        QPixmap image = QPixmap::fromImage(QImage(img2.data, img2.cols, img2.rows, img2.step, QImage::Format_Grayscale8));
+        QPixmap image = QPixmap::fromImage(QImage(img3.data, img3.cols, img3.rows, img3.step, QImage::Format_Grayscale8));
 
         imageLabel->setPixmap(image);
     }

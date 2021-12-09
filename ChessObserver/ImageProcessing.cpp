@@ -1,5 +1,3 @@
-
-
 #include<iostream>
 #include<opencv2/core.hpp>
 #include<opencv2/imgproc.hpp>
@@ -11,154 +9,94 @@
 using namespace std;
 using namespace cv;
 
+vector<vector<Point> > maxContourFinder(vector<vector<Point> > contours)
+{
+	vector<Point> hull, aux;//used for the creation of the final contour
+	int maxContour_i = 0;
+	double maxArea, newArea;
 
-Mat process(Mat img) {
+	convexHull(contours[0], hull);
+	maxArea = contourArea(hull);
 
-	try
+	for (int i = 1; i < contours.size(); i++)
 	{
-		if (img.empty())
+		convexHull(contours[i], aux);
+		newArea = contourArea(aux);
+		if (newArea > maxArea)
 		{
-			cout << "esti imbecil" << endl;
-			throw "BAD TIME AHEAD";
+			hull = aux;
+			maxArea = newArea;
+			maxContour_i = i;
 		}
-		else
-		{
-
-			//a contrast fix
-			Mat aux = Mat::zeros(img.size(), img.type());
-			double alpha = 1.0;
-			int beta = 0;
-
-			for (int y = 0; y < img.rows; y++) {
-				for (int x = 0; x < img.cols; x++) {
-					for (int c = 0; c < img.channels(); c++) {
-						aux.at<Vec3b>(y, x)[c] = saturate_cast<uchar>(alpha * img.at<Vec3b>(y, x)[c] + beta);
-					}
-				}
-			}
-			//imshow("chessboard test", img);
-			//waitKey();
-
-			img = aux;
-
-			//imshow("contrast enhaced", img);
-			//waitKey();
-
-			Mat grayed_out_img;
-
-			// COLOR_BGR2GRAY - > Conversion of BGR color spaces to grayscale
-			cvtColor(img, grayed_out_img, COLOR_BGR2GRAY);
-			Mat thresh_result;
-
-			//imshow("greyed out", grayed_out_img);
-			//waitKey();
-
-			//the segmentation itself is done with a threshhold 
-			threshold(grayed_out_img, thresh_result, 0 , 255, THRESH_BINARY_INV + THRESH_OTSU);
-
-			//imshow("threshold", thresh_result);
-			//waitKey();
-
-			//morphological transformation, for accentuating the general shape of an object
-			//the resulting image should have less noise than the initial threshold
-
-			//structural element for building the transformations
-			
-			//morph pick argument
-
-			//1 - > erosion
-			//2 - > dilation
-			//3 - > opening( THIS IS WHAT WE USE !!)
-			//4 - > closing
-			//5 - > Morphological Gradient
-			//6 - > Top Hat
-			//7 - > Black Hat
-
-			int operation = 3;
-
-			//morph size should be changed accordingly to the source image for the best result, so this value might have to go throught some changes in the future
-			int morph_size = 3;
-
-			Mat kernel = getStructuringElement(MORPH_RECT, Size(2 * morph_size + 1, 2 * morph_size + 1), Point(morph_size, morph_size));
-			Mat denoised_thresh;
-
-			morphologyEx(thresh_result, denoised_thresh, operation, kernel);
-			morphologyEx(denoised_thresh, denoised_thresh, 2, kernel);
-
-			//imshow("denoised threshold", denoised_thresh);
-			//waitKey();
-
-			Mat dilated_;
-			dilate(denoised_thresh, dilated_, Mat(), Point(-1, -1), morph_size);
-
-			//imshow("dilated threshold", dilated_);
-			//waitKey();
-
-			Mat rough_distances_;
-			
-			distanceTransform(denoised_thresh, rough_distances_, DIST_L2, 3);
-			
-			normalize(denoised_thresh, denoised_thresh, 0.0, 1.0, NORM_L2);
-
-			//getting the maximum value from the rough distance
-
-			double minVal;
-			double maxVal;
-			Point minLoc;
-			Point maxLoc;
-
-			minMaxLoc(rough_distances_, &minVal, &maxVal, &minLoc, &maxLoc);
-
-			Mat distances_;
-			threshold(rough_distances_, distances_, 0.7 * maxVal, maxVal, 0);
-
-			//imshow("distances", distances_);
-			//waitKey();
-
-			//stupid code honestly, but it seems to fix the dimension error i encountered with the substract function
-			imwrite("Source_Images\\background.jpeg", dilated_);
-			imwrite("Source_Images\\points.jpeg", distances_);
-			dilated_ = imread("Source_Images\\background.jpeg", IMREAD_GRAYSCALE);
-			distances_ = imread("Source_Images\\points.jpeg", IMREAD_GRAYSCALE);
-
-			Mat board_points;
-			//subtract(dilated_,100, dilated_);
-			subtract(dilated_, distances_, board_points);
-			
-			//subtract(grayed_out_img, distances_, board_points);
-			
-			Size patternsize(8, 8);
-			vector<Point2f> corners;
-
-			bool patternfound = findChessboardCorners(board_points, patternsize, corners, CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE);
-			if (patternfound)
-			{
-				cornerSubPix(board_points, corners, Size(11, 11), Size(-1, -1), TermCriteria(TermCriteria::EPS + TermCriteria::MAX_ITER, 30, 0.001));
-				drawChessboardCorners(img, patternsize, Mat(corners), patternfound);
-				imshow("zeama de petrisor", img);
-				waitKey();
-			}
-			else
-				cout << "\n\nesti fraier" << endl;
-
-			return board_points;
-
-		}
-		
-	}
-	catch (cv::Exception& e)
-	{
-		cerr << " \n\n\n\n\n\n\n\t\t EXCEPTIONS:\n" << e.msg << endl; // output exception message
 	}
 
+	vector<vector<Point> > output;
+	output.push_back(contours.at(maxContour_i));
+	output.push_back(hull);
+	return  output;
 
-
-	return Mat();
  }
 
 
-Mat process2(Mat img) {
 
+ Mat transformImage(Mat img)
+ {
+	 RNG rng(12345);
+	 Mat gray_img, canny_img, drawing;
+
+	 vector<vector<Point> > contours;
+	 vector<vector<Point> > cont_max;
+	 vector<Vec4i> hierarchy;
+	
+	 //some pre processing for accurate results
+	 cvtColor(img, gray_img, COLOR_BGR2GRAY);
+
+
+	 equalizeHist(gray_img, gray_img);
+
+	 GaussianBlur(gray_img, gray_img, Size(3,3), 0);
+	 Canny(gray_img, canny_img, 100, 200);
+
+	 //erode(canny_img, canny_img, Mat(), Point(-1, -1), 1);
+
+	 Mat element = getStructuringElement(0, Size(2 * 0 + 1, 2 * 0 + 1), Point(0, 0));
+	 erode(canny_img, canny_img, element);
+	 dilate(canny_img, canny_img, Mat(), Point(-1, -1), 1); 
+
+	 drawing = Mat::zeros(canny_img.size(), CV_8UC3);
+	 //finding contours and drawing them
+	 findContours(canny_img, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_NONE);
+
+
+	 //cont_max.push_back( maxContourFinder(contours));
+	 //drawContours(drawing, contours, -1, (0,255,0), 1, 8);
+	 cont_max = maxContourFinder(contours);
+	 Mat mask = Mat::zeros(img.size(), CV_8UC3);
+
+	 for (size_t i = 0; i < cont_max.size(); i++)
+	 {
+		 Scalar color = Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
+
+
+		 drawContours(mask, cont_max, (int)i, Scalar(255,255, 255), cv::FILLED);
+	 }
+	 
+	 Mat ungabunga = Mat::zeros(img.size(), CV_8UC3);
+	 img.copyTo(ungabunga, mask);
+
+	 imshow("mascatul", mask);
+	 imshow("monke ", ungabunga);
+
+	 //imshow("canny", canny_img);
+	// imshow("contours", drawing);
+
+	 return ungabunga;
+ }
+
+
+
+Mat process2(Mat img) {
+	
 	Mat edge = Mat(img.size(), CV_8UC1);
 	Mat cdst;
 
@@ -175,8 +113,6 @@ Mat process2(Mat img) {
 			}
 		}
 	}
-
-
 
 	Canny(aux, edge, 100, 200);
 
@@ -216,7 +152,7 @@ Mat process2(Mat img) {
 	//	line(img, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0, 0, 255), 3, LINE_AA);
 	//}
 
-	imshow("costiPanel", aux);
+	imshow("chestie", aux);
 
 	return cdst;
 }
