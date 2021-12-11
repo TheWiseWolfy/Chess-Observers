@@ -8,35 +8,61 @@ using namespace cv;
 
 VideoCapture cap(0);
 QLabel* imageLabel;
+Mat img;
 
-MainWindow::MainWindow(QWidget* parent){
+//Our sins
+int maximumThreshold = 200;
+int minimumThreshold = 100;
+
+MainWindow::MainWindow(QWidget* parent) {
 
     //Size of the window
     this->setFixedSize(1000, 1000);
     this->setWindowTitle(tr("Chess Observer"));
 
     //Main layout
-    QVBoxLayout* mainLayout = new QVBoxLayout();
-    mainLayout->setSizeConstraint(QLayout::SetFixedSize);
+    //QVBoxLayout* mainLayout = new QVBoxLayout();
+   // mainLayout->setSizeConstraint(QLayout::SetFixedSize);
     //mainLayout->setAlignment(Qt::AlignCenter);
-    this->setLayout(mainLayout);
+    //this->setLayout(mainLayout);
 
     //Button 1
     QPushButton* button1 = new QPushButton("Take webcam screenshot", this);
     button1->setGeometry(100, 0, 200, 50);
     //button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
-    mainLayout->addWidget(button1);
+    //mainLayout->addWidget(button1);
 
     //Button 2
     QPushButton* button2 = new QPushButton("Open file", this);
     button2->setGeometry(300, 0, 200, 50);
     //button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
-    mainLayout->addWidget(button2);
+    //mainLayout->addWidget(button2);
 
- 
+    //Some funky sliders
+
+    QSlider* sliderMax = new QSlider(Qt::Horizontal, this);
+    //slider->setFocusPolicy(Qt::StrongFocus);
+    sliderMax->setMinimum(0);
+    sliderMax->setMaximum(300);
+    //slider->setTickPosition(QSlider::TicksBothSides);
+    //slider->setTickInterval(10);
+    //slider->setSingleStep(1);
+    sliderMax->setGeometry(500, 0, 200, 50);
+
+    QSlider* sliderMin = new QSlider(Qt::Horizontal, this);
+    sliderMin->setMinimum(0);
+    sliderMin->setMaximum(300);
+    sliderMin->setGeometry(700, 0, 200, 50);
+
+
+    //mainLayout->addWidget(slider);
+
     //Here we do a connec
     QObject::connect(button1, &QPushButton::clicked, this, &MainWindow::takeScreenshot);
     QObject::connect(button2, &QPushButton::clicked, this, &MainWindow::readFileFromDisk);
+    QObject::connect(sliderMax, &QSlider::valueChanged, this, &MainWindow::sliderMaximumSetValue);
+    QObject::connect(sliderMin, &QSlider::valueChanged, this, &MainWindow::sliderMinimumSetValue);
+
 
     //Open up the webcam
     VideoCapture cap(0);
@@ -46,38 +72,27 @@ MainWindow::MainWindow(QWidget* parent){
 
     imageLabel = new QLabel(this);
     imageLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-
     imageLabel->setMinimumSize(200, 200);
     imageLabel->setMaximumSize(1000, 1000);
-
     imageLabel->setGeometry(0, 50, 1000, 1000);
 
-    mainLayout->addWidget(imageLabel);
+    //mainLayout->addWidget(imageLabel);
 
-    //onButtonEvent();
     this->show();
 }
 
-MainWindow::~MainWindow(){
+MainWindow::~MainWindow() {
 
 
 }
 
-void MainWindow::takeScreenshot(){
-   
-    Mat img;
+void MainWindow::takeScreenshot() {
+
     cap >> img;
 
+    processImage();
 
-
-
-    Mat img2 = process2(img);
-
-    //cvtColor(img2, img2, COLOR_BGR2RGB);
-
-    QPixmap image = QPixmap::fromImage(QImage(img2.data, img2.cols, img2.rows, img2.step, QImage::Format_Grayscale8));
-
-    imageLabel->setPixmap(image);
+    displayImage();
 }
 
 void MainWindow::readFileFromDisk() {
@@ -86,19 +101,38 @@ void MainWindow::readFileFromDisk() {
     fileName = QFileDialog::getOpenFileName(this, tr("Open Image"), "/home/jana", tr("Image Files (*.png *.jpg *.bmp)"));
 
     if (!fileName.isEmpty()) {
-        Mat img;
         String test = fileName.toStdString();
         img = imread(test);
 
-        cv::resize(img, img, Size(600* (img.cols / img.rows) , 600 ) , INTER_LINEAR);
+        processImage();
 
-        Mat img2 = transformImage(img);
-
-        Mat img3 = process2(img2);
-
-        //cvtColor(img2, img2, COLOR_BGR2RGB);
-        QPixmap image = QPixmap::fromImage(QImage(img3.data, img3.cols, img3.rows, img3.step, QImage::Format_Grayscale8));
-
-        imageLabel->setPixmap(image);
+        displayImage();
     }
+}
+
+void MainWindow::sliderMaximumSetValue(int value){
+    maximumThreshold = value;
+    processImage();
+}
+
+void MainWindow::sliderMinimumSetValue(int value) {
+    minimumThreshold = value;
+    processImage();
+}
+
+void MainWindow::processImage() {
+
+    if (!img.empty()) {
+        cv::resize(img, img, Size(600 * (img.cols / img.rows), 600), INTER_LINEAR);
+        Mat img2 = transformImage(img, minimumThreshold, maximumThreshold);
+        Mat img3 = findLines(img2);
+
+    }
+}
+
+void MainWindow::displayImage()
+{
+    QPixmap image = QPixmap::fromImage(QImage(img.data, img.cols, img.rows, img.step, QImage::Format_Grayscale8));
+
+    imageLabel->setPixmap(image);
 }

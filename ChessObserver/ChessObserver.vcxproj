@@ -31,12 +31,12 @@
     <Import Project="$(QtMsBuild)\qt_defaults.props" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
-    <QtInstall>5.12.11_msvc2017_64</QtInstall>
+    <QtInstall>Qt5.12.11</QtInstall>
     <QtModules>core;gui;widgets</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
-    <QtInstall>5.12.11_msvc2017_64</QtInstall>
+    <QtInstall>Qt5.12.11</QtInstall>
     <QtModules>core;gui;widgets</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
@@ -55,8 +55,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <IncludePath>F:\opencv_v2\include;$(IncludePath)</IncludePath>
-    <LibraryPath>F:\opencv_v2\x64\vc16\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>E:\Tehnical\VS Libraries\OpenCV\include;$(IncludePath)</IncludePath>
+    <LibraryPath>E:\Tehnical\VS Libraries\OpenCV\x64\vc16\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <IncludePath>E:\Tehnical\VS Libraries\OpenCV\include;$(IncludePath)</IncludePath>
