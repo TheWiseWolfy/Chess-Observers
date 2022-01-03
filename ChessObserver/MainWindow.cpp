@@ -9,6 +9,7 @@ using namespace cv;
 VideoCapture cap(0);
 QLabel* imageLabel;
 Mat img;
+Mat processedImg;
 
 //Our sins
 int maximumThreshold = 200;
@@ -123,16 +124,18 @@ void MainWindow::sliderMinimumSetValue(int value) {
 void MainWindow::processImage() {
 
     if (!img.empty()) {
-        cv::resize(img, img, Size(600 * (img.cols / img.rows), 600), INTER_LINEAR);
-        Mat img2 = transformImage(img, minimumThreshold, maximumThreshold);
+        Mat resized = Mat(Size(600 * (img.cols / img.rows), 600) , CV_8UC1);
+        cv::resize(img, resized, Size(600 * (img.cols / img.rows), 600), INTER_LINEAR);
+        Mat img2 = transformImage(resized, minimumThreshold, maximumThreshold);
         Mat img3 = findLines(img2);
-
+        processedImg = img3; 
     }
 }
 
 void MainWindow::displayImage()
 {
-    QPixmap image = QPixmap::fromImage(QImage(img.data, img.cols, img.rows, img.step, QImage::Format_Grayscale8));
+    cvtColor(processedImg, processedImg, COLOR_BGR2RGB);
+    QPixmap image = QPixmap::fromImage(QImage(processedImg.data, processedImg.cols, processedImg.rows, processedImg.step, QImage::Format_RGB888));
 
     imageLabel->setPixmap(image);
 }

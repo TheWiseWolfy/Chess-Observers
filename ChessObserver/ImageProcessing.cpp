@@ -9,8 +9,8 @@
 using namespace std;
 using namespace cv;
 
-vector<vector<Point> > maxContourFinder(vector<vector<Point> > contours)
-{
+vector<vector<Point> > maxContourFinder(vector<vector<Point> > contours){
+
 	vector<Point> hull, aux;//used for the creation of the final contour
 	int maxContour_i = 0;
 	double maxArea, newArea;
@@ -74,8 +74,7 @@ vector<Point2f> selectPoints(vector<Point2f> corners){
 }
 
 
-Mat transformImage(Mat img, int minimumThreshold, int maximumThreshold)
-{
+Mat transformImage(Mat img, int minimumThreshold, int maximumThreshold){
 
 //this function will be using for detecting and isolating 
 //the chessboard we have for an easy processing of the data on it
@@ -137,8 +136,7 @@ Mat transformImage(Mat img, int minimumThreshold, int maximumThreshold)
 	return masked_img;
 }
 
-vector<Vec2f> lineRefinement(vector<Vec2f> lines)
-{
+vector<Vec2f> lineRefinement(vector<Vec2f> lines){
 	for(int i  = 0 ; i < lines.size() ; i++)
 	{
 		//do a monke flip
@@ -168,20 +166,17 @@ Mat findLines(Mat img) {
 	}
 
 	Canny(aux, edge, 100, 200);
-
 	cvtColor(edge, cdst, COLOR_GRAY2BGR);
-
-
 	HoughLines(edge, lines, 1, CV_PI / 180, 150, 0, 0); // runs the actual detection
 
 	// Draw the lines
-
 
 	for (size_t i = 0; i < lines.size(); i++)
 	{
 		float rho = lines[i][0], theta = lines[i][1];
 		Point pt1, pt2;
 		double a = cos(theta), b = sin(theta);
+
 		double x0 = a * rho, y0 = b * rho;
 
 		pt1.x = cvRound(x0 + 1000 * (-b));
@@ -205,5 +200,5 @@ Mat findLines(Mat img) {
 
 	imshow("Imagine cu linii", aux);
 
-	return cdst;
+	return aux;
 }

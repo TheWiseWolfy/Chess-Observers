@@ -3,21 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="c4dbff9a-3e58-44f3-b73a-0e80be0a9da7" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/ChessObserver/ChessObserver.vcxproj.user" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/ChessObserver.vcxproj.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChessObserver/ImageProcessing.h" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/ImageProcessing.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChessObserver/MainWindow.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/MainWindow.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChessObserver/MainWindow.h" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/MainWindow.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/CL.command.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/CL.command.1.tlog" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.log" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/CL.read.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/CL.read.1.tlog" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/CL.write.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/CL.write.1.tlog" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/ChessObserver.write.1u.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/ChessObserver.write.1u.tlog" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/ImageProcessing.obj" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/ImageProcessing.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/MainWindow.obj" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/MainWindow.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/main.obj" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/main.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/moc_MainWindow.obj" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/moc_MainWindow.obj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/vc142.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/vc142.pdb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/ChessObserver.exe" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/ChessObserver.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/ChessObserver.ilk" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/ChessObserver.ilk" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/x64/Debug/ChessObserver.pdb" beforeDir="false" afterPath="$PROJECT_DIR$/x64/Debug/ChessObserver.pdb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/link.read.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/link.read.1.tlog" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/link.write.1.tlog" beforeDir="false" afterPath="$PROJECT_DIR$/ChessObserver/x64/Debug/ChessObserver.tlog/link.write.1.tlog" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,6 +26,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../../Airport Control" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
