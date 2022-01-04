@@ -1,2 +1,5 @@
 ﻿  MainWindow.cpp
-  ChessObserver.vcxproj -> F:\Projects\Git\Chess_observers\Git repository\Chess-Observers\x64\Debug\ChessObserver.exe
+  qrc_MainWindow.cpp
+  moc_MainWindow.cpp
+  LINK : F:\Projects\Git\Chess_observers\Git repository\Chess-Observers\Chess-Observers\x64\Debug\ChessObserver.exe not found or not built by the last incremental link; performing full link
+  ChessObserver.vcxproj -> F:\Projects\Git\Chess_observers\Git repository\Chess-Observers\Chess-Observers\x64\Debug\ChessObserver.exe

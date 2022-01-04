@@ -127,8 +127,8 @@ void MainWindow::processImage() {
         Mat resized = Mat(Size(600 * (img.cols / img.rows), 600) , CV_8UC1);
         cv::resize(img, resized, Size(600 * (img.cols / img.rows), 600), INTER_LINEAR);
         Mat img2 = transformImage(resized, minimumThreshold, maximumThreshold);
-        Mat img3 = findLines(img2);
-        processedImg = img3; 
+        //Mat img3 = findLines(img2);
+        //processedImg = img3; 
     }
 }
 
