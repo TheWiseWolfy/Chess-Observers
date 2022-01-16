@@ -1,5 +1,2 @@
-﻿  MainWindow.cpp
-  qrc_MainWindow.cpp
-  moc_MainWindow.cpp
-  LINK : F:\Projects\Git\Chess_observers\Git repository\Chess-Observers\Chess-Observers\x64\Debug\ChessObserver.exe not found or not built by the last incremental link; performing full link
+﻿  Reading Qt configuration (E:/Tehnical/Qt/Qt5.12.11/5.12.11/msvc2017_64/bin/qmake)
   ChessObserver.vcxproj -> F:\Projects\Git\Chess_observers\Git repository\Chess-Observers\Chess-Observers\x64\Debug\ChessObserver.exe

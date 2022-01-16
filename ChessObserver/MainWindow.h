@@ -16,6 +16,10 @@ public:
 	void readFileFromDisk();
 	void sliderMaximumSetValue(int value);
 	void sliderMinimumSetValue(int value);
+	void sliderOffsetSetValue(int value);
+
+	void recalculate();
+
 
 	//Local fuctions
 	void processImage();

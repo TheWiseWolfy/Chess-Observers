@@ -11,7 +11,6 @@
 
 bool debugMode = true;
 
-
 //this function will be using for detecting and isolating 
 //the chessboard we have for an easy processing of the data on it
 Mat transformImage(Mat img, int minimumThreshold, int maximumThreshold) {
@@ -56,8 +55,8 @@ Mat transformImage(Mat img, int minimumThreshold, int maximumThreshold) {
 	img.copyTo(masked_img, mask);   //Here we apply the mask to the image
 
 	if (debugMode) {
-		imshow("Image Mask", mask);
-		imshow("Masked Image ", masked_img);
+		//imshow("Image Mask", mask);
+		//imshow("Masked Image ", masked_img);
 
 	}
 
@@ -88,8 +87,7 @@ vector<Vec2f> lineRefinement(vector<Vec2f> lines, Mat img) {
 
 	aux = lineDisplay(lines, aux);
 
-
-	imshow("Final Display", aux);
+	//imshow("Line refinement", aux);
 
 	return lines;
 
@@ -182,11 +180,17 @@ vector<Point>  intersectLines(vector<Line> lines) {
 				if (m1 != numeric_limits<double>::max() && m2 != numeric_limits<double>::max()) {
 					Point inter;
 
-					if (m2 > m1) {
+					if (m2 < m1) {
 						inter.x = (c2 - c1) / (m1 - m2);
 						inter.y = m1 * inter.x + c1;
 
 					}
+					else if (m2 > m1) {
+						inter.x = (c1 - c2) / (m2 - m1);
+						inter.y = m2 * inter.x + c2;
+
+					}
+
 					intersections.push_back(inter);
 
 				}
@@ -204,7 +208,6 @@ vector<Point>  intersectLines(vector<Line> lines) {
 					intersections.push_back(inter);
 
 				}
-
 			}
 
 		}
@@ -214,6 +217,127 @@ vector<Point>  intersectLines(vector<Line> lines) {
 
 
 }
+
+
+Polygon4 extremePoints(vector<Point> intersections_raw, Size img, int offset)
+{
+	//theoretical ideal opposite to what the result should be like
+	//example :
+	//top left should be like (0,0) and the search starts at (inf,inf)
+	Point topL = Point(numeric_limits<int>::max(), numeric_limits<int>::max());
+	Point topR = Point(0, numeric_limits<int>::max());
+	Point bottomL = Point(numeric_limits<int>::max(),0);
+	Point bottomR = Point(0,0);
+
+	vector<Point> intersections;
+	//removing the points that are in the offset area from the intersections vector
+	for(int i = 0 ; i < intersections_raw.size();i++)
+	{
+		//condition to add a point
+		if(	intersections_raw[i].x > offset && 
+			intersections_raw[i].x < img.width - offset &&
+			intersections_raw[i].y >offset &&
+			intersections_raw[i].y < img.height - offset)
+			intersections.push_back(intersections_raw[i]);
+
+	}
+
+	for(int i = 0 ; i < intersections.size(); i++)
+	{
+		//looking for the top left point
+		if(intersections[i].x <= topL.x && intersections[i].y <= topL.y)
+			topL = intersections[i];
+
+		//looking for the top right point
+		else if(intersections[i].x >= topR.x && intersections[i].y <= topR.y)
+			topR = intersections[i];
+
+		//looking for the bottom left point
+		else if(intersections[i].x <= bottomL.x && intersections[i].y >= bottomL.y)
+			bottomL = intersections[i];
+		
+		//looking for the bottom right point
+		else if(intersections[i].x >= bottomR.x && intersections[i].y >= bottomR.y)
+			bottomR = intersections[i];
+		
+	}
+
+	Polygon4 extremes(topL, topR, bottomL, bottomR);
+	
+	return extremes;
+}
+
+void gridMake(Polygon4 ext, Polygon4 grid[][8]){
+
+	int segmentWidthTop = (ext.topRight.x - ext.topLeft.x)  / 8;
+	int segmentWidthBottom = (ext.bottomRight.x - ext.bottomLeft.x) / 8 ;
+
+	//<--
+	int segmentHeightLeft = (ext.bottomLeft.y - ext.topLeft.y) / 8 ;
+	//-->
+	int segmentHeightRight = (ext.bottomRight.y - ext.topRight.y) / 8;
+
+
+	for (int x = 0; x < 8; ++x) { //x = 0
+		for (int y = 0; y < 8; ++y) { //y = 0
+
+			//Incepem din coltul sus-stanga
+			int interpolatedWidth = ( segmentWidthTop * (8 - x) + segmentWidthBottom * x ) / 8;
+			int interpolatedHeight =( segmentHeightLeft * (8 - x) + segmentHeightRight * x ) / 8;
+
+			Point refference_point;
+			refference_point.x = x * interpolatedWidth + ext.topLeft.x ;
+			refference_point.y = y * interpolatedHeight + ext.topLeft.y ;
+
+			//Aici avem colturile fiecarui poligon
+			Point top_left = refference_point;
+			Point top_right = refference_point + Point(interpolatedWidth, 0);
+			Point bot_left = refference_point + Point(0, interpolatedHeight);
+			Point bot_right = refference_point + Point(interpolatedWidth, interpolatedHeight);
+
+			grid[x][y] = Polygon4(top_left, top_right, bot_left, bot_right);
+		}
+	}
+
+	return;
+
+}
+
+
+//void analizeTile(Polygon4 tile,Mat img)
+//{
+//	for(int x = tile.topLeft.x ; x < tile.topRight.x; x++)
+//	{
+//		for(int y = tile.topLeft.y ; y < tile.bottomLeft.y; y++ )
+//		{
+//			
+//
+//		}
+//	}
+//
+//
+//}
+//
+//
+//void analizeGrid(Polygon4 grid[][8],Mat img)
+//{
+//	for(int x = 0 ; x < 8; x++){
+//		for(int y = 0 ; y < 8; y++)
+//		{
+//			//analizing region at the position
+//			analizeTile(grid[x][y],img);
+//
+//
+//		}
+//	}
+//
+//
+//
+//}
+
+
+
+
 
 Mat displayPoints(vector<Point> points, Mat aux) {
 	for (size_t i = 0; i < points.size(); i++) {
