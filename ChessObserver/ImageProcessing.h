@@ -55,8 +55,11 @@ Mat displayPoints(vector<Point> points, Mat aux);
 vector<Point>  intersectLines(vector<Line> lines);
 Mat lineDisplay(vector<Vec2f> lines, Mat aux);
 Polygon4 extremePoints(vector<Point> intersections, Size img, int offset);
-
+void tileCutter(Mat img, Polygon4 grid[][8], Mat tiles[][8]);
 
 void gridMake(Polygon4 ext, Polygon4 grid[][8]);
 
 vector<vector<Point>> maxContourFinder(vector<vector<Point> > contours);
+
+
+void emptyTileFounder(Mat tiles[][8]);

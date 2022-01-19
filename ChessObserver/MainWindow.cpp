@@ -142,6 +142,7 @@ void MainWindow::processImage() {
 
         Mat img3 = img2.clone();
         Mat img4 = img2.clone();
+        Mat img5 = img2.clone();
 
         imshow("Pucte", displayPoints(puncte, img2));
 
@@ -167,10 +168,17 @@ void MainWindow::processImage() {
                 aruncate.push_back(grid[x][y].bottomRight);
             }
 
-
         imshow("Gridare finala", displayPoints(aruncate, img4));
         
+        Mat tiles[8][8];
+
+        tileCutter(img5, grid, tiles);
+
+        imshow("monke", tiles[0][0]);
+
         processedImg = img3;
+
+        emptyTileFounder(tiles);
     }
 }
 

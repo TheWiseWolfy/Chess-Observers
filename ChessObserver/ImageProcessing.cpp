@@ -304,6 +304,57 @@ void gridMake(Polygon4 ext, Polygon4 grid[][8]){
 }
 
 
+void tileCutter(Mat img, Polygon4 grid[][8], Mat tiles[][8] ) {
+
+	for (int x = 0; x < 8; ++x) { //x = 0
+		for (int y = 0; y < 8; ++y) { //y = 0
+			Polygon4 currentPolygon = grid[x][y];
+
+			int tileHeight = currentPolygon.bottomLeft.y - currentPolygon.topLeft.y;
+			int tileWidth = currentPolygon.topRight.x - currentPolygon.topLeft.x;
+
+			if(tileHeight > 0 && tileWidth > 0){
+				Rect crop_region(currentPolygon.topLeft.x , currentPolygon.topLeft.y, tileWidth, tileHeight);
+
+
+				Mat tile = img(crop_region);
+				tiles[x][y] = tile;
+			}
+		}
+	}
+}
+
+
+
+void emptyTileFounder( Mat tiles[][8] ) {
+
+
+	Mat tileHSV;
+	cvtColor(tiles[0][0], tileHSV, COLOR_BGR2HSV);
+
+	//values used to calculate the histogram
+	int h_bins = 50, s_bins = 60;
+	int histSize[] = { h_bins, s_bins };
+	// hue varies from 0 to 179, saturation from 0 to 255
+
+	float h_ranges[] = { 0, 180 };
+	float s_ranges[] = { 0, 256 };
+	const float* ranges[] = { h_ranges, s_ranges };
+	// Use the 0-th and 1-st channels
+	int channels[] = { 0, 1 };
+	Mat tile_histogram;
+
+	calcHist(&tileHSV, 1, channels, Mat(), tile_histogram, 2, histSize, ranges, true, false);
+	normalize(tile_histogram, tile_histogram, 0, 1, NORM_MINMAX, -1, Mat());
+
+	imshow("scared", tile_histogram);
+
+}
+
+
+
+
+
 //void analizeTile(Polygon4 tile,Mat img)
 //{
 //	for(int x = tile.topLeft.x ; x < tile.topRight.x; x++)
