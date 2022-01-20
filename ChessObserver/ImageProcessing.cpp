@@ -50,7 +50,40 @@ Mat transformImage(Mat img, int minimumThreshold, int maximumThreshold) {
 
 }
 
-//??
+//Gasim cel mai mare contur prin a calcula aria returnata de convex Hull
+vector<vector<Point> > maxContourFinder(vector<vector<Point> > contours) {
+	vector<Point> hull, aux; //used for the creation of the final contour
+	int maxContour_i = 0;
+	double maxArea, newArea;
+
+	//convex hull creates a polygon that is surrounding the contour
+	convexHull(contours[0], hull);
+	maxArea = contourArea(hull);
+
+	//comparing the areas between the hulls that are found to determine the largest object in the image
+	for (int i = 1; i < contours.size(); i++)
+	{
+		convexHull(contours[i], aux);
+		newArea = contourArea(aux);
+		if (newArea > maxArea)
+		{
+			hull = aux;
+			maxArea = newArea;
+			maxContour_i = i;
+		}
+	}
+
+	//the function returns the contour that corresponds to the hull
+	vector<vector<Point> > output;
+	output.push_back(contours.at(maxContour_i));
+	output.push_back(hull);
+	return  output;
+
+}
+
+
+
+//Aici desenam linii, le erodam si le recunoastem inapoi, in speranta de a elimina linii suprapuse
 vector<Vec2f> lineRefinement(vector<Vec2f> lines, Mat img) {
 
 	Mat aux = Mat::zeros(img.size(), img.type());
@@ -78,6 +111,7 @@ vector<Vec2f> lineRefinement(vector<Vec2f> lines, Mat img) {
 
 }
 
+//gasum linii 
 vector<Vec2f> findLines(cv::Mat img) {
 	Mat edge = Mat(img.size(), CV_8UC1);
 	Mat cdst;
@@ -90,6 +124,8 @@ vector<Vec2f> findLines(cv::Mat img) {
 	return lines;
 }
 
+
+//transformam din reprezentare polara in reprezentare cu 2 pucte
 vector<struct Line> point2Lines(vector<Vec2f> lines) {
 
 	float aux_angle, aux_len;
@@ -117,12 +153,10 @@ vector<struct Line> point2Lines(vector<Vec2f> lines) {
 
 		points.push_back(aux_line);
 	}
-
 	return points;
-
 }
 
-
+//Identificam fiecare puct de intersectie dintre liniile din vector
 vector<Point>  intersectLines(vector<Line> lines) {
 	// a line is defined by 2 points
 	vector<Point> intersections;
@@ -199,11 +233,9 @@ vector<Point>  intersectLines(vector<Line> lines) {
 
 	}
 	return intersections;
-
-
 }
 
-
+//Identificam puctele extreme dintr-un "nor" de pucte
 Polygon4 extremePoints(vector<Point> intersections_raw, Size img, int offset)
 {
 	//theoretical ideal opposite to what the result should be like
@@ -252,6 +284,7 @@ Polygon4 extremePoints(vector<Point> intersections_raw, Size img, int offset)
 	return extremes;
 }
 
+//Aici cream grid-ul pe care il vom folosi pentru segmentare
 void gridMake(Polygon4 ext, Polygon4 grid[][8]){
 
 	int segmentWidthTop = (ext.topRight.x - ext.topLeft.x)  / 8;
@@ -283,12 +316,10 @@ void gridMake(Polygon4 ext, Polygon4 grid[][8]){
 			grid[x][y] = Polygon4(top_left, top_right, bot_left, bot_right);
 		}
 	}
-
 	return;
-
 }
 
-
+//Aici facem crop la fiecare dintre cele 64 de tile-uri
 void tileCutter(Mat img, Polygon4 grid[][8], Mat tiles[][8] ) {
 
 	for (int x = 0; x < 8; ++x) { //x = 0
@@ -310,78 +341,7 @@ void tileCutter(Mat img, Polygon4 grid[][8], Mat tiles[][8] ) {
 }
 
 
-
-bool connComponent(Mat img,int T)
-{
-    Mat temp;
-	temp = img;
-	bitwise_not(img,temp);
-    Mat bw = T< 128 ? (temp < T) : (temp > T);
-    Mat labelImage(temp.size(), CV_32S);
-    
-	int nLabels = 0;
-	try{
-		nLabels = connectedComponents(bw, labelImage, 8);
-	}
-	catch (cv::Exception& e){
-		cerr << e.what() << endl; // output exception message
-	}
-
-	
-	if(nLabels < 2)
-		return false;
-	else
-		return true;
-}
-
-
-int T_finder(Mat img,int T)
-{
-
-    int new_T = 0;
-    double sum_min, sum_max;
-    int element_min, element_max;
-    element_min = element_max = 0;
-    sum_min = sum_max = 0;
-    double mean_min, mean_max;
-
-
-    while (new_T != T)
-    {
-
-        if (new_T != 0)
-            T = new_T;
-
-        element_min = element_max = 0;
-        sum_min = sum_max = 0;
-
-        for (int i = 0; i < img.rows; i++)
-        {
-            for (int j = 0; j < img.cols; j++)
-            {
-                if (img.data[i * img.cols + j] < T)
-                {
-                    sum_min += img.data[i * img.cols + j];
-                    element_min += 1;
-                }
-                else
-                {
-                    sum_max += img.data[i * img.cols + j];
-                    element_max += 1;
-                }
-            }
-        }
-
-        mean_min = sum_min / element_min;
-        mean_max = sum_max / element_max;
-        new_T = (mean_min + mean_max) / 2;
-        
-    }
-
-    return T;
-}
-
-
+//Aici parcurgem fiecare din cele 64 de tile-uri in cautare de piese
 Mat tileProcessing(Mat img, Mat tiles[][8], Polygon4 grid[][8]) {
 
 	for (int x = 0; x < 8; x++)
@@ -430,9 +390,32 @@ Mat tileProcessing(Mat img, Mat tiles[][8], Polygon4 grid[][8]) {
 	return img;
 }
 
+//Aici incercam sa recunoastem daca exista un piesa sau nu pe tile-ul respectiv
+bool connComponent(Mat img, int T)
+{
+	Mat temp;
+	temp = img;
+	bitwise_not(img, temp);
+	Mat bw = T < 128 ? (temp < T) : (temp > T);
+	Mat labelImage(temp.size(), CV_32S);
+
+	int nLabels = 0;
+	try {
+		nLabels = connectedComponents(bw, labelImage, 8);
+	}
+	catch (cv::Exception& e) {
+		cerr << e.what() << endl; // output exception message
+	}
 
 
+	if (nLabels < 2)
+		return false;
+	else
+		return true;
+}
 
+
+//Afisam chestii
 Mat displayPoints(vector<Point> points, Mat aux) {
 	for (size_t i = 0; i < points.size(); i++) {
 		circle(aux, points[i], 2, Scalar(0, 0, 255), 5, 1);
@@ -440,6 +423,7 @@ Mat displayPoints(vector<Point> points, Mat aux) {
 	}
 	return aux;
 }
+
 
 Mat lineDisplay(vector<Vec2f> lines, Mat aux) {
 	vector<Line> auxLines = point2Lines(lines);
@@ -452,33 +436,4 @@ Mat lineDisplay(vector<Vec2f> lines, Mat aux) {
 
 }
 
-vector<vector<Point> > maxContourFinder(vector<vector<Point> > contours) {
-	vector<Point> hull, aux; //used for the creation of the final contour
-	int maxContour_i = 0;
-	double maxArea, newArea;
-
-	//convex hull creates a polygon that is surrounding the contour
-	convexHull(contours[0], hull);
-	maxArea = contourArea(hull);
-
-	//comparing the areas between the hulls that are found to determine the largest object in the image
-	for (int i = 1; i < contours.size(); i++)
-	{
-		convexHull(contours[i], aux);
-		newArea = contourArea(aux);
-		if (newArea > maxArea)
-		{
-			hull = aux;
-			maxArea = newArea;
-			maxContour_i = i;
-		}
-	}
-
-	//the function returns the contour that corresponds to the hull
-	vector<vector<Point> > output;
-	output.push_back(contours.at(maxContour_i));
-	output.push_back(hull);
-	return  output;
-
-}
 
