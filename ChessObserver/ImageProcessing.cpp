@@ -9,8 +9,6 @@
 
 #include <set>
 
-bool debugMode = true;
-
 //this function will be using for detecting and isolating 
 //the chessboard we have for an easy processing of the data on it
 Mat transformImage(Mat img, int minimumThreshold, int maximumThreshold) {
@@ -40,25 +38,12 @@ Mat transformImage(Mat img, int minimumThreshold, int maximumThreshold) {
 
 	Mat mask = Mat::zeros(img.size(), CV_8UC3);
 
-	if (debugMode) {
-		for (size_t i = 0; i < cont_max.size(); i++) {
-			Scalar color = Scalar(rng.uniform(0, 256), rng.uniform(0, 256), rng.uniform(0, 256));
-
-		}
-
-	}
 	cont_max = maxContourFinder(contours);
 	drawContours(mask, cont_max, 1, Scalar(255, 255, 255), cv::FILLED);
 
 
 	masked_img = Mat::zeros(img.size(), CV_8UC3);
 	img.copyTo(masked_img, mask);   //Here we apply the mask to the image
-
-	if (debugMode) {
-		//imshow("Image Mask", mask);
-		//imshow("Masked Image ", masked_img);
-
-	}
 
 	//We return the image but only the chess table
 	return masked_img;
@@ -326,66 +311,124 @@ void tileCutter(Mat img, Polygon4 grid[][8], Mat tiles[][8] ) {
 
 
 
-void emptyTileFounder( Mat tiles[][8] ) {
+bool connComponent(Mat img,int T)
+{
+    Mat temp;
+	temp = img;
+	bitwise_not(img,temp);
+    Mat bw = T< 128 ? (temp < T) : (temp > T);
+    Mat labelImage(temp.size(), CV_32S);
+    
+	int nLabels = 0;
+	try{
+		nLabels = connectedComponents(bw, labelImage, 8);
+	}
+	catch (cv::Exception& e){
+		cerr << e.what() << endl; // output exception message
+	}
 
-
-	Mat tileHSV;
-	cvtColor(tiles[0][0], tileHSV, COLOR_BGR2HSV);
-
-	//values used to calculate the histogram
-	int h_bins = 50, s_bins = 60;
-	int histSize[] = { h_bins, s_bins };
-	// hue varies from 0 to 179, saturation from 0 to 255
-
-	float h_ranges[] = { 0, 180 };
-	float s_ranges[] = { 0, 256 };
-	const float* ranges[] = { h_ranges, s_ranges };
-	// Use the 0-th and 1-st channels
-	int channels[] = { 0, 1 };
-	Mat tile_histogram;
-
-	calcHist(&tileHSV, 1, channels, Mat(), tile_histogram, 2, histSize, ranges, true, false);
-	normalize(tile_histogram, tile_histogram, 0, 1, NORM_MINMAX, -1, Mat());
-
-	imshow("scared", tile_histogram);
-
+	
+	if(nLabels < 2)
+		return false;
+	else
+		return true;
 }
 
 
+int T_finder(Mat img,int T)
+{
+
+    int new_T = 0;
+    double sum_min, sum_max;
+    int element_min, element_max;
+    element_min = element_max = 0;
+    sum_min = sum_max = 0;
+    double mean_min, mean_max;
 
 
+    while (new_T != T)
+    {
 
-//void analizeTile(Polygon4 tile,Mat img)
-//{
-//	for(int x = tile.topLeft.x ; x < tile.topRight.x; x++)
-//	{
-//		for(int y = tile.topLeft.y ; y < tile.bottomLeft.y; y++ )
-//		{
-//			
-//
-//		}
-//	}
-//
-//
-//}
-//
-//
-//void analizeGrid(Polygon4 grid[][8],Mat img)
-//{
-//	for(int x = 0 ; x < 8; x++){
-//		for(int y = 0 ; y < 8; y++)
-//		{
-//			//analizing region at the position
-//			analizeTile(grid[x][y],img);
-//
-//
-//		}
-//	}
-//
-//
-//
-//}
+        if (new_T != 0)
+            T = new_T;
 
+        element_min = element_max = 0;
+        sum_min = sum_max = 0;
+
+        for (int i = 0; i < img.rows; i++)
+        {
+            for (int j = 0; j < img.cols; j++)
+            {
+                if (img.data[i * img.cols + j] < T)
+                {
+                    sum_min += img.data[i * img.cols + j];
+                    element_min += 1;
+                }
+                else
+                {
+                    sum_max += img.data[i * img.cols + j];
+                    element_max += 1;
+                }
+            }
+        }
+
+        mean_min = sum_min / element_min;
+        mean_max = sum_max / element_max;
+        new_T = (mean_min + mean_max) / 2;
+        
+    }
+
+    return T;
+}
+
+
+Mat tileProcessing(Mat img, Mat tiles[][8], Polygon4 grid[][8]) {
+
+	for (int x = 0; x < 8; x++)
+	{
+		for (int y = 0; y < 8; y++)
+		{
+			//center of tile
+			Polygon4 currentPolygon = grid[x][y];
+			int y_pos = currentPolygon.topLeft.y + (currentPolygon.bottomLeft.y - currentPolygon.topLeft.y) / 2;
+			int x_pos = currentPolygon.topLeft.x + (currentPolygon.topRight.x - currentPolygon.topLeft.x) / 2;
+			
+			Mat temp_tile = Mat::zeros(tiles[x][y].size(), IMREAD_GRAYSCALE);
+
+			if (tiles[x][y].empty()) {
+				return Mat::zeros(img.size(), CV_8UC3);
+			}
+
+			cvtColor(tiles[x][y], temp_tile, COLOR_BGR2GRAY);
+	
+
+			if(connComponent(temp_tile, 230))
+				circle(img, Point(x_pos,y_pos), 2, Scalar(0, 255, 0), 5, 1);
+
+		}
+	}
+
+	for (int x = 0; x < 8; x++)
+	{
+		for (int y = 0; y < 8; y++)
+		{
+			//center of tile
+			Polygon4 currentPolygon = grid[x][y];
+			int y_pos = currentPolygon.topLeft.y + (currentPolygon.bottomLeft.y - currentPolygon.topLeft.y) / 2;
+			int x_pos = currentPolygon.topLeft.x + (currentPolygon.topRight.x - currentPolygon.topLeft.x) / 2;
+
+
+			Mat temp_tile = tiles[x][y].clone();
+			cvtColor(tiles[x][y], temp_tile, COLOR_BGR2GRAY);
+
+			if(connComponent(temp_tile,230))
+				circle(img, Point(x_pos,y_pos), 2, Scalar(0, 255, 0), 5, 1);
+		
+		}
+	}
+
+	return img;
+}
 
 
 
@@ -396,9 +439,7 @@ Mat displayPoints(vector<Point> points, Mat aux) {
 
 	}
 	return aux;
-
 }
-
 
 Mat lineDisplay(vector<Vec2f> lines, Mat aux) {
 	vector<Line> auxLines = point2Lines(lines);
@@ -410,44 +451,6 @@ Mat lineDisplay(vector<Vec2f> lines, Mat aux) {
 	return aux;
 
 }
-
-//vector<Vec2f> likeRefinement(vector<Vec2f> lines) {
-//
-//	vector<Vec2f> newlines;
-//	bool changed = true;
-//
-//	float thetaError = 0.6f;//??
-//	float rhoError = 40.0f;
-//
-//	int maxIter = 1;
-//	int iter = 0;
-//
-//	while (changed && iter < maxIter){
-//		newlines.clear();
-//		changed = false;
-//		iter++;
-//
-//		for (size_t i = 0; i < lines.size(); i++) {
-//			float rho1 = lines[i][0];
-//			float theta1 = lines[i][1];
-//			for (size_t j = i + 1; j < lines.size(); j++) {
-//				float rho2 = lines[j][0];
-//				float theta2 = lines[j][1];
-//
-//				if (abs(theta1 - theta2) < thetaError && abs(rho1 - rho2) < rhoError) {
-//					changed = true;
-//
-//					Vec2f avarage = Vec2f((rho1 + rho2) / 2, (theta1 + theta2) / 2);  //Omori linile din care se nasc medile
-//					newlines.push_back(avarage);
-//				}
-//			}
-//		}
-//		lines.clear();
-//		lines = vector<Vec2f>(newlines.begin(), newlines.end());
-//	}
-//
-//	return lines;
-//}
 
 vector<vector<Point> > maxContourFinder(vector<vector<Point> > contours) {
 	vector<Point> hull, aux; //used for the creation of the final contour

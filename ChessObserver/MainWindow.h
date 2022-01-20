@@ -20,7 +20,6 @@ public:
 
 	void recalculate();
 
-
 	//Local fuctions
 	void processImage();
 	void displayImage();

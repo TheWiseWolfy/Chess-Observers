@@ -11,6 +11,8 @@ QLabel* imageLabel;
 Mat img;
 Mat processedImg;
 
+const int debugMode = 1;
+
 //Our sins
 int maximumThreshold = 200;
 int minimumThreshold = 100;
@@ -19,6 +21,8 @@ int offset = 0;
 MainWindow::MainWindow(QWidget* parent) {
 
     //Size of the window
+
+
     this->setFixedSize(1000, 1000);
     this->setWindowTitle(tr("Chess Observer"));
 
@@ -40,17 +44,32 @@ MainWindow::MainWindow(QWidget* parent) {
     QSlider* sliderMax = new QSlider(Qt::Horizontal, this);
     sliderMax->setMinimum(0);
     sliderMax->setMaximum(300);
-    sliderMax->setGeometry(500, 0, 200, 50);
+    sliderMax->setGeometry(550, 50, 200, 50);
 
     QSlider* sliderMin = new QSlider(Qt::Horizontal, this);
     sliderMin->setMinimum(0);
     sliderMin->setMaximum(300);
-    sliderMin->setGeometry(700, 0, 200, 50);
+    sliderMin->setGeometry(800, 50, 200, 50);
 
     QSlider* sliderOffset = new QSlider(Qt::Horizontal, this);
     sliderOffset->setMinimum(0);
     sliderOffset->setMaximum(300);
-    sliderOffset->setGeometry(700, 50, 200, 50);
+    sliderOffset->setGeometry(550, 150, 200, 50);
+
+    //We add some labels
+
+    QLabel* label1 = new QLabel(this);
+    label1->setText("Mask inferior threshold.");
+    label1->setGeometry(550, 0, 200, 50);
+
+
+    QLabel* label2 = new QLabel(this);
+    label2->setText("Mask superior threshold.");
+    label2->setGeometry(750, 0, 200, 50);
+
+    QLabel* label3 = new QLabel(this);
+    label3->setText("Grid Offset");
+    label3->setGeometry(550, 100, 200, 50);
 
     //Here we do a connec
     QObject::connect(button1, &QPushButton::clicked, this, &MainWindow::takeScreenshot);
@@ -60,6 +79,9 @@ MainWindow::MainWindow(QWidget* parent) {
     QObject::connect(sliderMax, &QSlider::valueChanged, this, &MainWindow::sliderMaximumSetValue);
     QObject::connect(sliderMin, &QSlider::valueChanged, this, &MainWindow::sliderMinimumSetValue);
     QObject::connect(sliderOffset, &QSlider::valueChanged, this, &MainWindow::sliderOffsetSetValue);
+
+
+
 
     //Open up the webcam
     VideoCapture cap(0);
@@ -71,7 +93,7 @@ MainWindow::MainWindow(QWidget* parent) {
     imageLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     imageLabel->setMinimumSize(200, 200);
     imageLabel->setMaximumSize(1000, 1000);
-    imageLabel->setGeometry(0, 100, 1000, 1000);
+    imageLabel->setGeometry(0, 200, 1000, 1000);
 
     //mainLayout->addWidget(imageLabel);
 
@@ -96,7 +118,6 @@ void MainWindow::recalculate() {
 
     processImage();
     displayImage();
-
 }
 
 void MainWindow::readFileFromDisk() {
@@ -129,56 +150,66 @@ void MainWindow::sliderOffsetSetValue(int value) {
 void MainWindow::processImage() {
 
     if (!img.empty()) {
-        Mat resized = Mat(Size(600 , 600) , CV_8UC1);
-        cv::resize(img, resized, Size(600 , 600), INTER_LINEAR);
+
+        float ratio = (float)img.rows / img.cols;
+
+        Mat resized = Mat(Size(800 , ratio * 800) , CV_8UC1);
+
+        cv::resize(img, resized, Size(800, ratio * 800), INTER_LINEAR);
+
+        //Aici izolam tabla de sah de restul imagini
         Mat img2 = transformImage(resized, minimumThreshold, maximumThreshold);
         
+        //Aici cautam liniile tablei de sah
         vector<Vec2f> lines = findLines(img2);
 
+        //Rafinam putin liniile desi nu e foarte efectiv
         lines = lineRefinement(lines, img2);
 
-        
+        //Aici avem toate puctele de intersectie a liniilor de pe imagine
         vector<Point> puncte = intersectLines( point2Lines(lines));
 
         Mat img3 = img2.clone();
         Mat img4 = img2.clone();
         Mat img5 = img2.clone();
-
-        imshow("Pucte", displayPoints(puncte, img2));
+        Mat img6 = img2.clone();
 
         Polygon4 extremes = extremePoints(puncte, img2.size() , offset);
-
-        vector<Point> extremeVector{ extremes.bottomLeft, extremes.bottomRight, extremes.topLeft, extremes.topRight };
-        
-        imshow("Pucte extreme", displayPoints(extremeVector, img3));
 
         Polygon4 grid[8][8] = { Polygon4() };
 
         gridMake(extremes, grid);
 
-
-        vector<Point> aruncate;
-
-        for(int x = 0 ; x < 8 ; x++)
-            for(int y = 0 ; y < 8 ; y++)
-            {
-                aruncate.push_back(grid[x][y].topLeft);
-                aruncate.push_back(grid[x][y].topRight);
-                aruncate.push_back(grid[x][y].bottomLeft);
-                aruncate.push_back(grid[x][y].bottomRight);
-            }
-
-        imshow("Gridare finala", displayPoints(aruncate, img4));
-        
+        //Aici o sa stocam fiecare imagine cu un tile
         Mat tiles[8][8];
 
         tileCutter(img5, grid, tiles);
 
-        imshow("monke", tiles[0][0]);
+        Mat img7 = tileProcessing(img6,tiles,grid);
 
-        processedImg = img3;
+        processedImg = img7;
 
-        emptyTileFounder(tiles);
+        if (debugMode) {
+            imshow("Pucte", displayPoints(puncte, img2));
+
+            //vector<Point> extremeVector{ extremes.bottomLeft, extremes.bottomRight, extremes.topLeft, extremes.topRight };
+           // imshow("Pucte extreme", displayPoints(extremeVector, img3));
+
+            vector<Point> aruncate;
+
+            for (int x = 0; x < 8; x++){
+                for (int y = 0; y < 8; y++)
+                {
+                    aruncate.push_back(grid[x][y].topLeft);
+                    aruncate.push_back(grid[x][y].topRight);
+                    aruncate.push_back(grid[x][y].bottomLeft);
+                    aruncate.push_back(grid[x][y].bottomRight);
+                }
+            }
+
+            imshow("Grid final", displayPoints(aruncate, img4));
+        }
+
     }
 }
 

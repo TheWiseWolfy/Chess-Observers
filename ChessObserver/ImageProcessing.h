@@ -17,6 +17,9 @@ struct Line {
 	cv::Point p2;
 };
 
+
+
+
 struct Polygon4 {
 
 	cv::Point topLeft;
@@ -62,4 +65,4 @@ void gridMake(Polygon4 ext, Polygon4 grid[][8]);
 vector<vector<Point>> maxContourFinder(vector<vector<Point> > contours);
 
 
-void emptyTileFounder(Mat tiles[][8]);
+Mat tileProcessing(Mat img, Mat tiles[][8],Polygon4 grid[][8]);
